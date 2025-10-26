@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --coral: #D97D55;
+            --cream: #F4E9D7;
+            --sage: #B8C4A9;
+            --teal: #6FA4AF;
+            --indigo: #4E56C0;
+            --purple: #9B5DE0;
+            --lavender: #D78FEE;
+            --pink: #FDCFFA;
+        }
+        body { background: linear-gradient(135deg, var(--cream) 0%, var(--pink) 100%); min-height: 100vh; }
+        .favorite-card { 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            border: 2px solid var(--sage);
+            background: linear-gradient(135deg, var(--cream) 0%, white 100%);
+        }
+        .favorite-card:hover { transform: translateY(-8px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .task-item { 
+            border-left: 4px solid var(--teal); 
+            background: linear-gradient(135deg, white 0%, var(--cream) 100%);
+            border-radius: 10px;
+        }
+        .task-completed { 
+            text-decoration: line-through; 
+            opacity: 0.6; 
+            border-left-color: var(--sage);
+            background: linear-gradient(135deg, var(--cream) 0%, #e8f5e8 100%);
+        }
+        .stats-card { 
+            background: linear-gradient(135deg, var(--indigo) 0%, var(--purple) 100%); 
+            color: white;
+            border-radius: 15px;
+        }
+        .favicon { width: 24px; height: 24px; margin-right: 8px; }
+        .card { 
+            border-radius: 15px; 
+            border: 2px solid var(--sage);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-primary { background: var(--teal); border-color: var(--teal); }
+        .btn-success { background: var(--sage); border-color: var(--sage); }
+        .btn-danger { background: var(--coral); border-color: var(--coral); }
+        .btn-warning { background: var(--lavender); border-color: var(--lavender); color: white; }
+        .modal-content { border-radius: 15px; border: 2px solid var(--sage); }
+        .form-control { border: 2px solid var(--cream); border-radius: 10px; }
+        .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 0.2rem rgba(111, 164, 175, 0.25); }
+        #currentDateTime {
+            background: linear-gradient(45deg, var(--coral), var(--teal), var(--purple), var(--lavender));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        h2, h5, h6 { color: var(--indigo); }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-3">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-3">Dashboard</h2>
+                <div class="text-center">
+                    <h4 id="currentDateTime"></h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorite Pages Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="fas fa-star text-warning"></i> Favorite Pages</h5>
+                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addFavoriteModal">
+                        <i class="fas fa-plus"></i> Add Favorite
+                    </button>
+                </div>
+                <div id="favoritesContainer" class="row"></div>
+            </div>
+        </div>
+
+        <!-- Task Manager Section -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-tasks"></i> Task Manager</h5>
+                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#addTaskModal">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="date" id="taskDate" class="form-control" onchange="loadTasks()">
+                        </div>
+                        <div id="tasksContainer"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card mb-3">
+                    <div class="card-body text-center">
+                        <h3 id="todayTaskCount">0</h3>
+                        <p>Today's Tasks</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-history"></i> Task History</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="taskStats"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Favorite Modal -->
+    <div class="modal fade" id="addFavoriteModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Add Favorite Page</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="favoriteForm">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" class="form-control" id="favoriteTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label>URL</label>
+                            <input type="url" class="form-control" id="favoriteUrl" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Custom Icon URL (optional)</label>
+                            <input type="url" class="form-control" id="favoriteIcon" placeholder="Leave empty for auto favicon">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveFavorite()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Add Task</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskForm">
+                        <div class="form-group">
+                            <label>Task Title</label>
+                            <input type="text" class="form-control" id="taskTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" class="form-control" id="taskDateInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" class="form-control" id="taskTime">
+                        </div>
+                        <div class="form-group">
+                            <label>Estimated Duration (minutes)</label>
+                            <input type="number" class="form-control" id="taskDuration" min="1">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="saveTask()">Save Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('taskDateInput').value = new Date().toISOString().split('T')[0];
+            loadFavorites();
+            loadTasks();
+            updateTaskStats();
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDateTime').textContent = now.toLocaleString();
+        }
+
+        // Favorites Management
+        function loadFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const container = document.getElementById('favoritesContainer');
+            container.innerHTML = '';
+            
+            favorites.forEach((fav, index) => {
+                const domain = new URL(fav.url).hostname;
+                const iconUrl = fav.icon || `https://www.google.com/s2/favicons?domain=${domain}`;
+                container.innerHTML += `
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card favorite-card h-100" onclick="window.open('${fav.url}', '_blank')">
+                            <div class="card-body text-center">
+                                <img src="${iconUrl}" class="favicon" alt="">
+                                <h6 class="card-title">${fav.title}</h6>
+                                <small class="text-muted">${domain}</small>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-warning mr-1" onclick="event.stopPropagation(); editFavorite(${index})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteFavorite(${index})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        let editingFavoriteIndex = -1;
+        
+        function saveFavorite() {
+            const title = document.getElementById('favoriteTitle').value;
+            const url = document.getElementById('favoriteUrl').value;
+            const icon = document.getElementById('favoriteIcon').value;
+            
+            if (title && url) {
+                const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                const favorite = { title, url, icon };
+                
+                if (editingFavoriteIndex >= 0) {
+                    favorites[editingFavoriteIndex] = favorite;
+                } else {
+                    favorites.push(favorite);
+                }
+                
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                document.getElementById('favoriteForm').reset();
+                $('#addFavoriteModal').modal('hide');
+                editingFavoriteIndex = -1;
+                loadFavorites();
+            }
+        }
+        
+        function editFavorite(index) {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const fav = favorites[index];
+            
+            document.getElementById('favoriteTitle').value = fav.title;
+            document.getElementById('favoriteUrl').value = fav.url;
+            document.getElementById('favoriteIcon').value = fav.icon || '';
+            
+            editingFavoriteIndex = index;
+            $('#addFavoriteModal').modal('show');
+        }
+
+        function deleteFavorite(index) {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            favorites.splice(index, 1);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            loadFavorites();
+        }
+
+        // Task Management
+        function loadTasks() {
+            const selectedDate = document.getElementById('taskDate').value;
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const dayTasks = tasks.filter(task => task.date === selectedDate);
+            
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = '';
+            
+            if (dayTasks.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No tasks for this day</p>';
+                return;
+            }
+            
+            dayTasks.forEach((task, index) => {
+                const taskIndex = tasks.findIndex(t => t.id === task.id);
+                container.innerHTML += `
+                    <div class="card mb-2 task-item ${task.completed ? 'task-completed' : ''}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${task.title}</h6>
+                                    <p class="mb-1 text-muted">${task.description}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> ${task.time || 'No time set'}
+                                        ${task.duration ? `| <i class="fas fa-hourglass-half"></i> ${task.duration}min` : ''}
+                                    </small>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm ${task.completed ? 'btn-warning' : 'btn-success'}" 
+                                            onclick="toggleTask(${taskIndex})">
+                                        <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info" onclick="editTask(${taskIndex})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTask(${taskIndex})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('todayTaskCount').textContent = dayTasks.length;
+        }
+
+        let editingTaskIndex = -1;
+        
+        function saveTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const date = document.getElementById('taskDateInput').value;
+            const time = document.getElementById('taskTime').value;
+            const duration = document.getElementById('taskDuration').value;
+            
+            if (title && date) {
+                const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+                const task = {
+                    title,
+                    description,
+                    date,
+                    time,
+                    duration,
+                    completed: false
+                };
+                
+                if (editingTaskIndex >= 0) {
+                    task.id = tasks[editingTaskIndex].id;
+                    task.completed = tasks[editingTaskIndex].completed;
+                    task.createdAt = tasks[editingTaskIndex].createdAt;
+                    tasks[editingTaskIndex] = task;
+                } else {
+                    task.id = Date.now();
+                    task.createdAt = new Date().toISOString();
+                    tasks.push(task);
+                }
+                
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                document.getElementById('taskForm').reset();
+                $('#addTaskModal').modal('hide');
+                editingTaskIndex = -1;
+                loadTasks();
+                updateTaskStats();
+            }
+        }
+        
+        function editTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const task = tasks[index];
+            
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskDateInput').value = task.date;
+            document.getElementById('taskTime').value = task.time || '';
+            document.getElementById('taskDuration').value = task.duration || '';
+            
+            editingTaskIndex = index;
+            $('#addTaskModal').modal('show');
+        }
+
+        function toggleTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            tasks[index].completed = !tasks[index].completed;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks();
+            updateTaskStats();
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks();
+            updateTaskStats();
+        }
+
+        function updateTaskStats() {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const today = new Date().toISOString().split('T')[0];
+            const todayTasks = tasks.filter(task => task.date === today);
+            const completedToday = todayTasks.filter(task => task.completed).length;
+            const totalTasks = tasks.length;
+            const totalCompleted = tasks.filter(task => task.completed).length;
+            
+            document.getElementById('taskStats').innerHTML = `
+                <div class="mb-2">
+                    <small class="text-muted">Today: ${completedToday}/${todayTasks.length}</small>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar" style="width: ${todayTasks.length ? (completedToday/todayTasks.length)*100 : 0}%"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Overall: ${totalCompleted}/${totalTasks}</small>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-success" style="width: ${totalTasks ? (totalCompleted/totalTasks)*100 : 0}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
