@@ -8,71 +8,76 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --coral: #D97D55;
-            --cream: #F4E9D7;
-            --sage: #B8C4A9;
-            --teal: #6FA4AF;
-            --indigo: #4E56C0;
-            --purple: #9B5DE0;
-            --lavender: #D78FEE;
-            --pink: #FDCFFA;
+            --navy: #102E50;
+            --gold: #F5C45E;
+            --orange: #E78B48;
+            --red: #BE3D2A;
+            --light-gold: #FDF4D3;
+            --light-orange: #FFF0E6;
         }
-        body { background: linear-gradient(135deg, var(--cream) 0%, var(--pink) 100%); min-height: 100vh; }
+        body { background: linear-gradient(135deg, var(--navy) 0%, #1a3a5c  50%, #2a4a6c 100%); min-height: 100vh; }
         .favorite-card { 
             cursor: pointer; 
             transition: all 0.3s; 
-            border: 2px solid var(--sage);
-            background: linear-gradient(135deg, var(--cream) 0%, white 100%);
+            border: 2px solid var(--gold);
+            background: linear-gradient(135deg, var(--light-gold) 0%, white 100%);
         }
         .favorite-card:hover { transform: translateY(-8px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
         .task-item { 
-            border-left: 4px solid var(--teal); 
-            background: linear-gradient(135deg, white 0%, var(--cream) 100%);
+            border-left: 4px solid var(--orange); 
+            background: linear-gradient(135deg, white 0%, var(--light-orange) 100%);
             border-radius: 10px;
+            color: var(--navy);
         }
         .task-completed { 
             text-decoration: line-through; 
             opacity: 0.6; 
-            border-left-color: var(--sage);
-            background: linear-gradient(135deg, var(--cream) 0%, #e8f5e8 100%);
+            border-left-color: var(--gold);
+            background: linear-gradient(135deg, var(--light-gold) 0%, #f0f8e8 100%);
+            color: var(--navy);
         }
         .stats-card { 
-            background: linear-gradient(135deg, var(--indigo) 0%, var(--purple) 100%); 
+            background: linear-gradient(135deg, var(--navy) 0%, var(--orange) 100%); 
             color: white;
             border-radius: 15px;
         }
         .favicon { width: 24px; height: 24px; margin-right: 8px; }
         .card { 
             border-radius: 15px; 
-            border: 2px solid var(--sage);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid var(--gold);
+            box-shadow: 0 4px 15px rgba(16, 46, 80, 0.15);
+            color: var(--navy);
         }
-        .btn-primary { background: var(--teal); border-color: var(--teal); }
-        .btn-success { background: var(--sage); border-color: var(--sage); }
-        .btn-danger { background: var(--coral); border-color: var(--coral); }
-        .btn-warning { background: var(--lavender); border-color: var(--lavender); color: white; }
-        .modal-content { border-radius: 15px; border: 2px solid var(--sage); }
-        .form-control { border: 2px solid var(--cream); border-radius: 10px; }
-        .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 0.2rem rgba(111, 164, 175, 0.25); }
+        .btn-primary { background: var(--navy); border-color: var(--navy); }
+        .btn-success { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+        .btn-danger { background: var(--red); border-color: var(--red); }
+        .btn-warning { background: var(--orange); border-color: var(--orange); color: white; }
+        .btn-info { background: var(--orange); border-color: var(--orange); }
+        .modal-content { border-radius: 15px; border: 2px solid var(--gold); }
+        .form-control { border: 2px solid var(--light-gold); border-radius: 10px; }
+        .form-control:focus { border-color: var(--orange); box-shadow: 0 0 0 0.2rem rgba(231, 139, 72, 0.25); }
         #currentDateTime {
-            background: linear-gradient(45deg, var(--coral), var(--teal), var(--purple), var(--lavender));
+            background: linear-gradient(45deg, var(--gold), var(--orange), var(--red), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
         }
-        h2, h5, h6 { color: var(--indigo); }
+        h2, h5, h6 { color: white; }
+        .card h5, .card h6 { color: var(--navy); }
+        .text-muted { color: #6c757d !important; }
     </style>
 </head>
 <body>
     <div class="container-fluid p-3">
         <!-- Header -->
-        <div class="row mb-4">
+        <div class="row mb-5" style="margin-top: 3rem;">
             <div class="col-12">
-                <h2 class="text-center mb-3">Dashboard</h2>
                 <div class="text-center">
-                    <h4 id="currentDateTime"></h4>
+                    <div id="currentTime" style="font-size: 4.5rem; font-weight: bold; background: linear-gradient(45deg, var(--gold), var(--orange), var(--red), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);"></div>
+                    <div id="currentDate" style="font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-top: 0.5rem; text-transform: lowercase;"></div>
                 </div>
             </div>
         </div>
@@ -217,7 +222,11 @@
 
         function updateDateTime() {
             const now = new Date();
-            document.getElementById('currentDateTime').textContent = now.toLocaleString();
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString([], timeOptions);
+            document.getElementById('currentDate').textContent = now.toLocaleDateString([], dateOptions);
         }
 
         // Favorites Management
@@ -231,19 +240,25 @@
                 const iconUrl = fav.icon || `https://www.google.com/s2/favicons?domain=${domain}`;
                 container.innerHTML += `
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card favorite-card h-100" onclick="window.open('${fav.url}', '_blank')">
+                        <div class="card favorite-card h-100" onclick="window.open('${fav.url}', '_blank')" style="position: relative;">
                             <div class="card-body text-center">
-                                <img src="${iconUrl}" class="favicon" alt="">
-                                <h6 class="card-title">${fav.title}</h6>
-                                <small class="text-muted">${domain}</small>
-                                <div class="mt-2">
-                                    <button class="btn btn-sm btn-warning mr-1" onclick="event.stopPropagation(); editFavorite(${index})">
+                                <div style="position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column;">
+                                    <button class="btn btn-xs btn-info mb-1" style="padding: 1px 4px; font-size: 8px;" onclick="event.stopPropagation(); moveFavorite(${index}, 'up')">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-info mb-1" style="padding: 1px 4px; font-size: 8px;" onclick="event.stopPropagation(); moveFavorite(${index}, 'down')">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-warning mb-1" style="padding: 1px 4px; font-size: 8px;" onclick="event.stopPropagation(); editFavorite(${index})">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteFavorite(${index})">
+                                    <button class="btn btn-xs btn-danger" style="padding: 1px 4px; font-size: 8px;" onclick="event.stopPropagation(); deleteFavorite(${index})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
+                                <img src="${iconUrl}" class="favicon" alt="">
+                                <h6 class="card-title mt-2">${fav.title}</h6>
+                                <small class="text-muted">${domain}</small>
                             </div>
                         </div>
                     </div>
@@ -293,6 +308,17 @@
             favorites.splice(index, 1);
             localStorage.setItem('favorites', JSON.stringify(favorites));
             loadFavorites();
+        }
+        
+        function moveFavorite(index, direction) {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const newIndex = direction === 'up' ? index - 1 : index + 1;
+            
+            if (newIndex >= 0 && newIndex < favorites.length) {
+                [favorites[index], favorites[newIndex]] = [favorites[newIndex], favorites[index]];
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                loadFavorites();
+            }
         }
 
         // Task Management
